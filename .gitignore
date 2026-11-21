@@ -1,0 +1,14 @@
+# Virtual environments (catches both .venv and .venv-cuda)
+.venv/
+.venv-cuda/
+
+# Python caches (catches root and sixdrepnet360/__pycache__)
+__pycache__/
+*.py[cod]
+
+# Large model weights (keep on NAS/OneDrive/SSD instead of Git)
+*.pth
+
+# OS files
+.DS_Store
+Thumbs.db

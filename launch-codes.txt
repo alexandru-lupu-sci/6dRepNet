@@ -1,0 +1,17 @@
+To launch the head tracker, use one of these commands into the terminal.
+
+- There are two separate environments in this project, because depending on which GPU you want to use,
+it will use a specific version of torch library specific to the chosen GPU, that can't be in the same
+environment both at once.
+
+- Simply running the script, no matter the chosen script, will use by default .venv environment that has 
+a torch library that works with Intel integrated graphics.
+
+- If you wish to use the NVIDIA GPU, you must specify which environment it should (.venv-cuda) with the following
+commands in your terminal:
+
+Using Intel integrated graphics:
+.venv\Scripts\python.exe 6D-Intel-v1.1.py
+
+Using CUDA cores of NVIDIA GPUs:
+.venv-cuda\Scripts\python.exe 6D-Cuda-v1.1.py

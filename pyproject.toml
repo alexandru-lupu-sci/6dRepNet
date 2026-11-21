@@ -1,0 +1,30 @@
+[project]
+name = "6drepnet"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Alexandru Lupu", email = "alxdrz@proton.me" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "matplotlib>=3.11.2",
+    "numpy>=2.4.6",
+    "opencv-python>=5.0.0.93",
+    "pandas>=3.1.1",
+    "pillow>=13.0.0",
+    "scipy>=1.17.1",
+    "torch>=2.4.1",
+    "torch-directml>=0.2.5.dev240914",
+    "torchvision>=0.19.1",
+]
+
+[project.scripts]
+6drepnet = "_6drepnet:main"
+
+[tool.uv.build-backend]
+module-name = "_6drepnet"
+
+[build-system]
+requires = ["uv_build>=0.13.8,<0.14.0"]
+build-backend = "uv_build"
