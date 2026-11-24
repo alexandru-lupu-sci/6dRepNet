@@ -1,7 +1,7 @@
 [project]
 name = "6drepnet"
 version = "0.1.0"
-description = "Add your description here"
+description = "Head Tracker sending data by UDP to local server"
 readme = "README.md"
 authors = [
     { name = "Alexandru Lupu", email = "alxdrz@proton.me" }

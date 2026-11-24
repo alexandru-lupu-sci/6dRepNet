@@ -1,146 +1,156 @@
 # 6DRepNet360 Full Rotation
 
 This is a PyTorch implementation of 6DRepNet360 specified in
-["Towards Robust and Unconstrained Full Range of Rotation Head Pose Estimation"](https://ieeexplore.ieee.org/document/10477888)
-IEEE Transactions on Image Processing 2024
+["Toward Robust and Unconstrained Full Range of Rotation Head Pose Estimation"](https://ieeexplore.ieee.org/document/10477888)
+(IEEE Transactions on Image Processing, 2024).
 
-Head position is tracked and coordinates are displayed on screen and via UDP at IP127.0.0.1:4242
+Head orientation is tracked in full 360° rotation, displayed on screen, and streamed as 48-byte UDP packets (`6d`: `x, y, z, yaw, pitch, roll`, with `x = y = z = 0.0`) to `127.0.0.1:4242` (e.g., for PsychoPy).
 
-Contains two versions "python 6D-Intel-v1.1.py" and "python 6D-Cuda-v1.1.py". One using Intel Integrated Graphics, and one using the CUDA cores of NVIDIA GPUs.
+Only the two `_LAB` scripts are used to launch the head tracker:
 
-###### Monitors Yaw, Pitch and Roll coordinates:
+- `6D-Intel-v1.2_LAB.py` — for Intel Integrated Graphics (DirectML / XPU, with CPU fallback; 640×480 MJPG @ 30 FPS, 10 Hz preview throttle).
+- `6D-Cuda-v1.2_LAB.py` — for NVIDIA GPUs via CUDA (with CPU fallback; 640×480 MJPG @ 60 FPS target, 15 Hz preview throttle).
 
-* Yaw:
+### Yaw, Pitch, and Roll Coordinates
 
-  * 0° center
-  * Positive° rotation to the right (up to +179.9°, i.e. with back to the camera)
-  * Negative° rotation to the left (up to -179.9°)
-* Pitch:
+- **Yaw**:
+  - `0°` center
+  - Positive° rotation to the right (up to `+179.9°`, i.e. with back to the camera)
+  - Negative° rotation to the left (up to `-179.9°`)
+- **Pitch**:
+  - `0°` center
+  - Positive° looking up
+  - Negative° looking down
+- **Roll**:
+  - `0°` center
+  - Positive° tilt to the left
+  - Negative° tilt to the right
+  - **Attention**: Positive/negative left/right is opposite to Yaw!
 
-  * 0° center
-  * Positive° looking up
-  * Negative° looking down
-* Roll:
+## Two Separate Environments
 
-  * 0° center
-  * Positive° tilt to the left
-  * Negative° tilt to the right
-  * Attention: Positive/negative and left/right is not the same as Yaw!!
+There are **two separate virtual environments** in this project. Depending on which GPU you want to use, a specific build of PyTorch is required, and the Intel DirectML and NVIDIA CUDA builds cannot coexist in the same environment:
 
-# Environment setup
+- **`.venv`** (default environment, managed by `pyproject.toml` and `uv.lock`) — uses `torch 2.4.1` + `torch-directml` for **Intel Integrated Graphics**.
+- **`.venv-cuda`** — uses CUDA-enabled PyTorch (`torch 2.14.1+cu130` + `torchvision 0.29.1+cu130`) for **NVIDIA GPUs**.
 
-conda create -n ENV-NAME python=3.11 -y
-conda activate ENV-NAME
+Running a script without explicitly selecting `.venv-cuda` defaults to `.venv` (Intel graphics), so you must launch the tracker using the environment-specific terminal commands listed in `launch-codes.txt`.
 
-# Modules to download
+## Installation (with uv)
 
-python==3.11
+### Prerequisites
 
-torch==2.4.1
-torchvision==0.19.1
-torch-directml
-opencv-python
-Pillow
-numpy
-scipy
+1. **Install [`uv`](https://docs.astral.sh/uv/getting-started/installation/)** (tested with `uv 0.13.8`; Python `3.12` is pinned in `.python-version` and downloaded automatically by `uv`, while `pyproject.toml` requires `>=3.11`):
 
-matplotlib
+   ```powershell
+   powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+   ```
 
-##### Install code :
+2. **Model weights**: Place `6DRepNet360_Full-Rotation_300W_LP+Panoptic.pth` inside `6DRepNet360-master/` (`*.pth` files are excluded from Git in `.gitignore` due to size).
 
-* pip install torch==2.4.1 torchvision==0.19.1 torch-directml opencv-python Pillow numpy scipy matplotlib pandas
+### 1. Intel Integrated Graphics Environment (`.venv`)
 
-# Open from terminal
+From the repository root, run:
 
-cd C:\\Users\\Lab\\Desktop\\6dRepNet
+```powershell
+uv sync
+```
 
-python 6D-Intel-v1.1.py
+This creates `.venv` with Python `3.12` and installs all locked dependencies from `pyproject.toml` and `uv.lock`.
 
+### 2. NVIDIA GPU / CUDA Environment (`.venv-cuda`)
 
+From the repository root, run:
 
-(Sam's laptop)
+```powershell
+uv venv .venv-cuda --python 3.12
+uv pip install --python .venv-cuda\Scripts\python.exe torch torchvision --index-url https://download.pytorch.org/whl/cu130
+uv pip install --python .venv-cuda\Scripts\python.exe opencv-python pillow numpy scipy matplotlib pandas
+```
 
-cd C:\\Users\\MuellSam\\switchdrive\\VCNL\\Sam - Experiment\\Pilot\_v2\\6DRepNet\_headtracker
+> [!NOTE]
+> If a machine has an older NVIDIA driver requiring an earlier CUDA wheel index (e.g., `cu124` or `cu121`), adjust `--index-url` accordingly.
 
-# All modules present in the new environment after install
+## Launching the Head Tracker
 
-###### Name                    Version      Build                      Channel
+Only the **`_LAB`** scripts are used to launch the head tracker, using the terminal commands stored in `launch-codes.txt`.
 
-bzip2                      1.0.8            h0ad9c76\_10         conda-forge
-ca-certificates       2026.7.22   h4c7d964\_0           conda-forge
-contourpy             1.3.3            pypi\_0                     pypi
-cycler                     0.12.1          pypi\_0                    pypi
-filelock                   4.2.0            pypi\_0                    pypi
-fonttools               4.67.0          pypi\_0                    pypi
-fsspec                    2026.9.0     pypi\_0                    pypi
-jinja2                      3.1.6           pypi\_0                    pypi
-kiwisolver              1.5.1           pypi\_0                    pypi
-libexpat                 2.8.5           hac47afa\_0           conda-forge
-libffi                        3.7.0           h3d046cb\_1         conda-forge
-liblzma                   5.8.3           hfd05255\_1          conda-forge
-libpython               3.11.17      hfb4101e\_2\_cpython  conda-forge
-libsqlite                  3.54.0        hf5d6505\_101       conda-forge
-libzlib                      1.3.2          hfd05255\_3           conda-forge
-markupsafe           3.0.4          pypi\_0                    pypi
-matplotlib              3.11.2        pypi\_0                    pypi
-mpmath                 1.3.0          pypi\_0                    pypi
-networkx               3.6.1           pypi\_0                   pypi
-numpy                   2.4.6           pypi\_0                   pypi
-opencv-python     5.0.0.93     pypi\_0                   pypi
-openssl                  3.6.5           hf411b9b\_0          conda-forge
-packaging              26.3            pyhc364b38\_0     conda-forge
-pandas                   3.0.6           pypi\_0                   pypi
-pillow                     12.3.0         pypi\_0                   pypi
-pip                          26.2.1         pyh8b19718\_0    conda-forge
-pyparsing              3.3.3           pypi\_0                   pypi
-python                   3.11.17       hb12b558\_2\_cpython  conda-forge
-python-dateutil    2.9.0.post0    pypi\_0               pypi
-scipy                      1.17.1           pypi\_0                 pypi
-setuptools            84.0.0           pyh332efcf\_0     conda-forge
-six                          1.17.0           pypi\_0                 pypi
-sympy                   1.14.0           pypi\_0                 pypi
-tk                           8.6.13           h967ab96\_4       conda-forge
-torch                     2.4.1             pypi\_0                 pypi
-torch-directml     0.2.5.dev240914  pypi\_0        pypi
-torchvision           0.19.1           pypi\_0                 pypi
-typing-extensions     4.16.0     pypi\_0                 pypi
-tzdata                     2026.5        pypi\_0                 pypi
-ucrt                       10.0.26100.0     h57928b3\_0         conda-forge
-vc                          14.5               ha367084\_41            conda-forge
-vc14\_runtime      14.51.36247      habf1de7\_41       conda-forge
-vcomp14              14.51.36247      habf1de7\_41       conda-forge
-wheel                    0.48.0                pyhd8ed1ab\_0     conda-forge
+Open a terminal in the project folder:
 
-# Function of the .py files
+```powershell
+cd <path-to-6dRepNet>
+```
 
-##### 6D-Intel-v1.1.py
+Then run the command for your target GPU:
 
-The script that opens the camera and sends head position feed via UDP at IP127.0.0.1:4242. Works with PCs that only have Intel integrated graphics
+- **Intel Integrated Graphics (`.venv`)**:
 
-##### 6D-Cuda-v1.1.py
+  ```powershell
+  .venv\Scripts\python.exe 6D-Intel-v1.2_LAB.py
+  ```
 
-Same, but uses the CUDA cores for PCs who have an NVIDIA GPU.
+- **NVIDIA GPU / CUDA (`.venv-cuda`)**:
 
-Needs a change in modules loaded (recommend setting a new environment due to modules conflicts): pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu121
+  ```powershell
+  .venv-cuda\Scripts\python.exe 6D-Cuda-v1.2_LAB.py
+  ```
 
-##### test.py
+### Preview Window Controls (`_LAB` Scripts)
 
-Contains the neural network architecture. 6D-Intel/Cuda-v1.1 imports from here to build the model
+- A green square marks the exact `Resize(256)` → `CenterCrop(224)` region seen by the model so you can center the participant's head before calibration.
+- Press **`p`** to pause or resume preview rendering (UDP streaming continues uninterrupted).
+- Press **`q`** to quit.
 
-##### utils.py
+## Packages and Versions Used (Info)
 
-Math functions (e.g. converting raw outputs into a rotation matrix)
+- **Python**: `3.12.16` (both `.venv` and `.venv-cuda`)
+- **Package manager**: `uv 0.13.8`
 
-##### datasets.py
+| Package | `.venv` (Intel / DirectML) | `.venv-cuda` (NVIDIA CUDA) |
+| :--- | :--- | :--- |
+| `6drepnet` | `0.1.0` (editable) | `—` |
+| `contourpy` | `1.4.0` | `1.4.0` |
+| `cycler` | `0.12.1` | `0.12.1` |
+| `filelock` | `4.2.10` | `4.2.4` |
+| `fonttools` | `4.68.0` | `4.68.0` |
+| `fsspec` | `2026.9.0` | `2026.9.0` |
+| `jinja2` | `3.1.6` | `3.1.6` |
+| `kiwisolver` | `1.5.1` | `1.5.1` |
+| `markupsafe` | `3.0.4` | `3.0.3` |
+| `matplotlib` | `3.11.2` | `3.11.2` |
+| `mpmath` | `1.3.0` | `1.3.0` |
+| `networkx` | `3.7` | `3.7` |
+| `numpy` | `2.5.4` | `2.5.4` |
+| `opencv-python` | `5.0.0.93` | `5.1.0.95` |
+| `packaging` | `26.3` | `26.3` |
+| `pandas` | `3.1.1` | `3.1.1` |
+| `pillow` | `13.0.0` | `13.0.0` |
+| `pyparsing` | `3.3.3` | `3.3.3` |
+| `python-dateutil` | `4.0.0` | `4.0.0` |
+| `scipy` | `1.18.1` | `1.18.1` |
+| `setuptools` | `—` | `78.1.0` |
+| `sympy` | `1.14.0` | `1.14.0` |
+| `torch` | `2.4.1` | `2.14.1+cu130` |
+| `torch-directml` | `0.2.5.dev240914` | `—` |
+| `torchvision` | `0.19.1` | `0.29.1+cu130` |
+| `typing-extensions` | `4.16.0` | `4.16.0` |
+| `tzdata` | `2026.6` | `2026.6` |
 
-Can be used for training the model or loading a dataset. Even if not used, this file needs to be present in the folder.
+## Project Files
 
-##### 6DRepNet360\_Full-Rotation\_300W\_LP+Panoptic.pth
+- **`6D-Intel-v1.2_LAB.py`** — Active Intel integrated graphics launcher (uses `.venv`; opens webcam, predicts head pose, and streams UDP packets to `127.0.0.1:4242`).
+- **`6D-Cuda-v1.2_LAB.py`** — Active NVIDIA CUDA launcher (uses `.venv-cuda`; same UDP stream using CUDA acceleration).
+- **`6D-Intel-v1.1.py` & `6D-Cuda-v1.1.py`** — Earlier versions kept for reference (not used for lab launches).
+- **`launch-codes.txt`** — Terminal launch commands and environment notes.
+- **`pyproject.toml`, `uv.lock`, `.python-version`** — `uv` project configuration, locked dependencies for `.venv`, and Python `3.12` version pin.
+- **`6DRepNet360-master/sixdrepnet360/test.py`** — Contains the `SixDRepNet360` neural network architecture imported by the launcher scripts.
+- **`6DRepNet360-master/sixdrepnet360/utils.py`** — Rotation math utilities.
+- **`6DRepNet360-master/sixdrepnet360/datasets.py`** — Upstream dataset/training module; must remain in the folder.
+- **`6DRepNet360-master/6DRepNet360_Full-Rotation_300W_LP+Panoptic.pth`** — Pretrained 360° head pose deep learning model weights (git-ignored; copy manually).
 
-The actual deep learning model trained on 360° images of faces
+## Citation
 
-# Cite headtracker article
-
+```bibtex
 @ARTICLE{10477888,
 author={Hempel, Thorsten and Abdelrahman, Ahmed A. and Al-Hamadi, Ayoub},
 journal={IEEE Transactions on Image Processing},
@@ -150,6 +160,6 @@ volume={33},
 number={},
 pages={2377-2387},
 doi={10.1109/TIP.2024.3378180}}
+```
 
-Article link : https://ieeexplore.ieee.org/document/10477888
-
+Article link: https://ieeexplore.ieee.org/document/10477888

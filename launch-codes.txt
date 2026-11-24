@@ -12,6 +12,8 @@ commands in your terminal:
 
 Using Intel integrated graphics:
 .venv\Scripts\python.exe 6D-Intel-v1.1.py
+.venv\Scripts\python.exe 6D-Intel-v1.2_LAB.py
 
 Using CUDA cores of NVIDIA GPUs:
 .venv-cuda\Scripts\python.exe 6D-Cuda-v1.1.py
+.venv-cuda\Scripts\python.exe 6D-Cuda-v1.2_LAB.py
