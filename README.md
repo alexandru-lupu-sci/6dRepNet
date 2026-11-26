@@ -40,17 +40,32 @@ Running a script without explicitly selecting `.venv-cuda` defaults to `.venv` (
 
 ### Prerequisites
 
-1. **Install [`uv`](https://docs.astral.sh/uv/getting-started/installation/)** (tested with `uv 0.13.8`; Python `3.12` is pinned in `.python-version` and downloaded automatically by `uv`, while `pyproject.toml` requires `>=3.11`):
+1. **Install [Git](https://git-scm.com/downloads)** (to clone the repository).
+2. **Install [`uv`](https://docs.astral.sh/uv/getting-started/installation/)** (tested with `uv 0.13.8`; Python `3.12` is pinned in `.python-version` and downloaded automatically by `uv`, while `pyproject.toml` requires `>=3.11`):
 
    ```powershell
    powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
    ```
 
-2. **Model weights**: Place `6DRepNet360_Full-Rotation_300W_LP+Panoptic.pth` inside `6DRepNet360-master/` (`*.pth` files are excluded from Git in `.gitignore` due to size).
+   Restart your terminal after installing `uv` so it is available on `PATH`.
 
-### 1. Intel Integrated Graphics Environment (`.venv`)
+### 1. Clone the Repository
 
-From the repository root, run:
+Clone the repository from GitHub ([alexandru-lupu-sci/6dRepNet](https://github.com/alexandru-lupu-sci/6dRepNet)) and move into the project folder:
+
+```powershell
+git clone https://github.com/alexandru-lupu-sci/6dRepNet.git
+cd 6dRepNet
+```
+
+> [!NOTE]
+> The pretrained model weights (`6DRepNet360-master/6DRepNet360_Full-Rotation_300W_LP+Panoptic.pth`, ~90 MB) are already included in the repository—no manual download is required. (`.gitignore` only ignores any additional untracked `*.pth` files.)
+
+Set up the environment for the GPU you plan to use (or both if you need to switch between Intel and NVIDIA GPUs):
+
+### 2. Intel Integrated Graphics Environment (`.venv`)
+
+From the repository root (`6dRepNet`), run:
 
 ```powershell
 uv sync
@@ -58,9 +73,9 @@ uv sync
 
 This creates `.venv` with Python `3.12` and installs all locked dependencies from `pyproject.toml` and `uv.lock`.
 
-### 2. NVIDIA GPU / CUDA Environment (`.venv-cuda`)
+### 3. NVIDIA GPU / CUDA Environment (`.venv-cuda`)
 
-From the repository root, run:
+From the repository root (`6dRepNet`), run:
 
 ```powershell
 uv venv .venv-cuda --python 3.12
@@ -146,7 +161,7 @@ Then run the command for your target GPU:
 - **`6DRepNet360-master/sixdrepnet360/test.py`** — Contains the `SixDRepNet360` neural network architecture imported by the launcher scripts.
 - **`6DRepNet360-master/sixdrepnet360/utils.py`** — Rotation math utilities.
 - **`6DRepNet360-master/sixdrepnet360/datasets.py`** — Upstream dataset/training module; must remain in the folder.
-- **`6DRepNet360-master/6DRepNet360_Full-Rotation_300W_LP+Panoptic.pth`** — Pretrained 360° head pose deep learning model weights (git-ignored; copy manually).
+- **`6DRepNet360-master/6DRepNet360_Full-Rotation_300W_LP+Panoptic.pth`** — Pretrained 360° head pose deep learning model weights (included in the repository; additional untracked `*.pth` files are ignored by `.gitignore`).
 
 ## Citation
 
