@@ -6,10 +6,9 @@ This is a PyTorch implementation of 6DRepNet360 specified in
 
 Head orientation is tracked in full 360° rotation, displayed on screen, and streamed as 48-byte UDP packets (`6d`: `x, y, z, yaw, pitch, roll`, with `x = y = z = 0.0`) to `127.0.0.1:4242` (e.g., for PsychoPy).
 
-Only the two `_LAB` scripts are used to launch the head tracker:
+The head tracker uses a single virtual environment (`.venv`) configured with CUDA-enabled PyTorch:
 
-- `6D-Intel-v1.2_LAB.py` — for Intel Integrated Graphics (DirectML / XPU, with CPU fallback; 640×480 MJPG @ 30 FPS, 10 Hz preview throttle).
-- `6D-Cuda-v1.2_LAB.py` — for NVIDIA GPUs via CUDA (with CPU fallback; 640×480 MJPG @ 60 FPS target, 15 Hz preview throttle).
+- **`6D-Cuda-v1.2_LAB.py`** — for NVIDIA GPUs via CUDA (with automatic CPU fallback; 640×480 MJPG @ 60 FPS target, 15 Hz preview throttle).
 
 ### Yaw, Pitch, and Roll Coordinates
 
@@ -27,15 +26,6 @@ Only the two `_LAB` scripts are used to launch the head tracker:
   - Negative° tilt to the right
   - **Attention**: Positive/negative left/right is opposite to Yaw!
 
-## Two Separate Environments
-
-There are **two separate virtual environments** in this project. Depending on which GPU you want to use, a specific build of PyTorch is required, and the Intel DirectML and NVIDIA CUDA builds cannot coexist in the same environment:
-
-- **`.venv`** (default environment, managed by `pyproject.toml` and `uv.lock`) — uses `torch 2.4.1` + `torch-directml` for **Intel Integrated Graphics**.
-- **`.venv-cuda`** — uses CUDA-enabled PyTorch (`torch 2.14.1+cu130` + `torchvision 0.29.1+cu130`) for **NVIDIA GPUs**.
-
-Running a script without explicitly selecting `.venv-cuda` defaults to `.venv` (Intel graphics), so you must launch the tracker using the environment-specific terminal commands listed in `launch-codes.txt`.
-
 ## Installation (with uv)
 
 ### Prerequisites
@@ -48,6 +38,7 @@ Running a script without explicitly selecting `.venv-cuda` defaults to `.venv` (
    ```
 
    Restart your terminal after installing `uv` so it is available on `PATH`.
+3. **NVIDIA GPU driver** compatible with CUDA 13.0 (if no NVIDIA GPU is available, the script automatically falls back to CPU).
 
 ### 1. Clone the Repository
 
@@ -61,9 +52,7 @@ cd 6dRepNet
 > [!NOTE]
 > The pretrained model weights (`6DRepNet360-master/6DRepNet360_Full-Rotation_300W_LP+Panoptic.pth`, ~90 MB) are already included in the repository—no manual download is required. (`.gitignore` only ignores any additional untracked `*.pth` files.)
 
-Set up the environment for the GPU you plan to use (or both if you need to switch between Intel and NVIDIA GPUs):
-
-### 2. Intel Integrated Graphics Environment (`.venv`)
+### 2. Set Up the Virtual Environment (`.venv`)
 
 From the repository root (`6dRepNet`), run:
 
@@ -71,46 +60,27 @@ From the repository root (`6dRepNet`), run:
 uv sync
 ```
 
-This creates `.venv` with Python `3.12` and installs all locked dependencies from `pyproject.toml` and `uv.lock`.
-
-### 3. NVIDIA GPU / CUDA Environment (`.venv-cuda`)
-
-From the repository root (`6dRepNet`), run:
-
-```powershell
-uv venv .venv-cuda --python 3.12
-uv pip install --python .venv-cuda\Scripts\python.exe torch torchvision --index-url https://download.pytorch.org/whl/cu130
-uv pip install --python .venv-cuda\Scripts\python.exe opencv-python pillow numpy scipy matplotlib pandas
-```
+This creates `.venv` with Python `3.12` and installs CUDA-enabled PyTorch (`cu130`) along with all locked dependencies from `pyproject.toml` and `uv.lock`.
 
 > [!NOTE]
-> If a machine has an older NVIDIA driver requiring an earlier CUDA wheel index (e.g., `cu124` or `cu121`), adjust `--index-url` accordingly.
+> If a machine has an older NVIDIA driver requiring an earlier CUDA wheel index (e.g., `cu124` or `cu121`), update the `[[tool.uv.index]]` URL in `pyproject.toml` accordingly and re-run `uv sync`.
 
 ## Launching the Head Tracker
 
-Only the **`_LAB`** scripts are used to launch the head tracker, using the terminal commands stored in `launch-codes.txt`.
-
-Open a terminal in the project folder:
+Open a terminal in the project folder and launch `6D-Cuda-v1.2_LAB.py` directly with `.venv` (this command is also saved in `launch-codes.txt`):
 
 ```powershell
 cd <path-to-6dRepNet>
+.venv\Scripts\python.exe 6D-Cuda-v1.2_LAB.py
 ```
 
-Then run the command for your target GPU:
+Alternatively, you can launch it with `uv`:
 
-- **Intel Integrated Graphics (`.venv`)**:
+```powershell
+uv run 6D-Cuda-v1.2_LAB.py
+```
 
-  ```powershell
-  .venv\Scripts\python.exe 6D-Intel-v1.2_LAB.py
-  ```
-
-- **NVIDIA GPU / CUDA (`.venv-cuda`)**:
-
-  ```powershell
-  .venv-cuda\Scripts\python.exe 6D-Cuda-v1.2_LAB.py
-  ```
-
-### Preview Window Controls (`_LAB` Scripts)
+### Preview Window Controls
 
 - A green square marks the exact `Resize(256)` → `CenterCrop(224)` region seen by the model so you can center the participant's head before calibration.
 - Press **`p`** to pause or resume preview rendering (UDP streaming continues uninterrupted).
@@ -118,47 +88,45 @@ Then run the command for your target GPU:
 
 ## Packages and Versions Used (Info)
 
-- **Python**: `3.12.16` (both `.venv` and `.venv-cuda`)
+- **Python**: `3.12.16` (`.venv`)
 - **Package manager**: `uv 0.13.8`
 
-| Package | `.venv` (Intel / DirectML) | `.venv-cuda` (NVIDIA CUDA) |
-| :--- | :--- | :--- |
-| `6drepnet` | `0.1.0` (editable) | `—` |
-| `contourpy` | `1.4.0` | `1.4.0` |
-| `cycler` | `0.12.1` | `0.12.1` |
-| `filelock` | `4.2.10` | `4.2.4` |
-| `fonttools` | `4.68.0` | `4.68.0` |
-| `fsspec` | `2026.9.0` | `2026.9.0` |
-| `jinja2` | `3.1.6` | `3.1.6` |
-| `kiwisolver` | `1.5.1` | `1.5.1` |
-| `markupsafe` | `3.0.4` | `3.0.3` |
-| `matplotlib` | `3.11.2` | `3.11.2` |
-| `mpmath` | `1.3.0` | `1.3.0` |
-| `networkx` | `3.7` | `3.7` |
-| `numpy` | `2.5.4` | `2.5.4` |
-| `opencv-python` | `5.0.0.93` | `5.1.0.95` |
-| `packaging` | `26.3` | `26.3` |
-| `pandas` | `3.1.1` | `3.1.1` |
-| `pillow` | `13.0.0` | `13.0.0` |
-| `pyparsing` | `3.3.3` | `3.3.3` |
-| `python-dateutil` | `4.0.0` | `4.0.0` |
-| `scipy` | `1.18.1` | `1.18.1` |
-| `setuptools` | `—` | `78.1.0` |
-| `sympy` | `1.14.0` | `1.14.0` |
-| `torch` | `2.4.1` | `2.14.1+cu130` |
-| `torch-directml` | `0.2.5.dev240914` | `—` |
-| `torchvision` | `0.19.1` | `0.29.1+cu130` |
-| `typing-extensions` | `4.16.0` | `4.16.0` |
-| `tzdata` | `2026.6` | `2026.6` |
+| Package | Version (`.venv`) |
+| :--- | :--- |
+| `6drepnet` | `0.1.0` (editable) |
+| `contourpy` | `1.4.0` |
+| `cycler` | `0.12.1` |
+| `filelock` | `4.2.10` |
+| `fonttools` | `4.68.0` |
+| `fsspec` | `2026.9.0` |
+| `jinja2` | `3.1.6` |
+| `kiwisolver` | `1.5.1` |
+| `markupsafe` | `3.0.4` |
+| `matplotlib` | `3.11.2` |
+| `mpmath` | `1.3.0` |
+| `networkx` | `3.7` |
+| `numpy` | `2.5.4` |
+| `opencv-python` | `5.0.0.93` |
+| `packaging` | `26.3` |
+| `pandas` | `3.1.1` |
+| `pillow` | `13.0.0` |
+| `pyparsing` | `3.3.3` |
+| `python-dateutil` | `4.0.0` |
+| `scipy` | `1.18.1` |
+| `setuptools` | `84.2.1` |
+| `sympy` | `1.14.0` |
+| `torch` | `2.14.1+cu130` |
+| `torchvision` | `0.29.1+cu130` |
+| `typing-extensions` | `4.16.0` |
+| `tzdata` | `2026.6` |
 
 ## Project Files
 
-- **`6D-Intel-v1.2_LAB.py`** — Active Intel integrated graphics launcher (uses `.venv`; opens webcam, predicts head pose, and streams UDP packets to `127.0.0.1:4242`).
-- **`6D-Cuda-v1.2_LAB.py`** — Active NVIDIA CUDA launcher (uses `.venv-cuda`; same UDP stream using CUDA acceleration).
-- **`6D-Intel-v1.1.py` & `6D-Cuda-v1.1.py`** — Earlier versions kept for reference (not used for lab launches).
-- **`launch-codes.txt`** — Terminal launch commands and environment notes.
-- **`pyproject.toml`, `uv.lock`, `.python-version`** — `uv` project configuration, locked dependencies for `.venv`, and Python `3.12` version pin.
-- **`6DRepNet360-master/sixdrepnet360/test.py`** — Contains the `SixDRepNet360` neural network architecture imported by the launcher scripts.
+- **`6D-Cuda-v1.2_LAB.py`** — Active NVIDIA CUDA head tracker launcher (uses `.venv`; opens webcam, predicts head pose, and streams UDP packets to `127.0.0.1:4242`, with automatic CPU fallback).
+- **`6D-Cuda-v1.1.py`, `6D-Intel-v1.1.py`, `6D-Intel-v1.2_LAB.py`** — Earlier/legacy scripts kept in the repository for reference (not used; Intel DirectML is no longer supported in `.venv`).
+- **`launch-codes.txt`** — Terminal launch command and single-environment notes for `.venv`.
+- **`pyproject.toml`, `uv.lock`, `.python-version`** — `uv` project configuration (CUDA `cu130` PyTorch index), locked dependencies for `.venv`, and Python `3.12` version pin.
+- **`6DRepNet360-master/sixdrepnet360/test.py`** — Contains the `SixDRepNet360` neural network architecture imported by the launcher script.
 - **`6DRepNet360-master/sixdrepnet360/utils.py`** — Rotation math utilities.
 - **`6DRepNet360-master/sixdrepnet360/datasets.py`** — Upstream dataset/training module; must remain in the folder.
 - **`6DRepNet360-master/6DRepNet360_Full-Rotation_300W_LP+Panoptic.pth`** — Pretrained 360° head pose deep learning model weights (included in the repository; additional untracked `*.pth` files are ignored by `.gitignore`).
