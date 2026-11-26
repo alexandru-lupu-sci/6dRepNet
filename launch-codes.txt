@@ -1,19 +1,11 @@
-To launch the head tracker, use one of these commands into the terminal.
+To launch the head tracker, run this command in the terminal from the project folder:
 
-- There are two separate environments in this project, because depending on which GPU you want to use,
-it will use a specific version of torch library specific to the chosen GPU, that can't be in the same
-environment both at once.
+.venv\Scripts\python.exe 6D-Cuda-v1.2_LAB.py
 
-- Simply running the script, no matter the chosen script, will use by default .venv environment that has 
-a torch library that works with Intel integrated graphics.
+(Or using uv: uv run 6D-Cuda-v1.2_LAB.py)
 
-- If you wish to use the NVIDIA GPU, you must specify which environment it should (.venv-cuda) with the following
-commands in your terminal:
-
-Using Intel integrated graphics:
-.venv\Scripts\python.exe 6D-Intel-v1.1.py
-.venv\Scripts\python.exe 6D-Intel-v1.2_LAB.py
-
-Using CUDA cores of NVIDIA GPUs:
-.venv-cuda\Scripts\python.exe 6D-Cuda-v1.1.py
-.venv-cuda\Scripts\python.exe 6D-Cuda-v1.2_LAB.py
+Notes:
+- This project uses a single virtual environment (.venv), managed by uv (pyproject.toml / uv.lock),
+  configured with CUDA-enabled PyTorch for NVIDIA GPUs (with automatic CPU fallback if no NVIDIA GPU is detected).
+- Earlier reference script (not used for lab launches):
+  .venv\Scripts\python.exe 6D-Cuda-v1.1.py

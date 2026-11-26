@@ -15,12 +15,24 @@ dependencies = [
     "pillow>=13.0.0",
     "scipy>=1.17.1",
     "torch>=2.4.1",
-    "torch-directml>=0.2.5.dev240914",
     "torchvision>=0.19.1",
 ]
 
 [project.scripts]
 6drepnet = "_6drepnet:main"
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cu130", marker = "sys_platform == 'win32' or sys_platform == 'linux'" },
+]
+torchvision = [
+    { index = "pytorch-cu130", marker = "sys_platform == 'win32' or sys_platform == 'linux'" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
+explicit = true
 
 [tool.uv.build-backend]
 module-name = "_6drepnet"
